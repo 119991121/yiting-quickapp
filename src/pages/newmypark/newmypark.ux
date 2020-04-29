@@ -1,0 +1,447 @@
+<import name="my-avatar" src="../../components/avatar"></import>
+<import name="white-space" src="../../../node_modules/@showings_quix/quix_ui/WhiteSpace"></import>
+<import name="radio-field" src="../../../node_modules/@showings_quix/quix_ui/RadioField"></import>
+<import name="cell-box" src="../../../node_modules/@showings_quix/quix_ui/CellBox"></import>
+<import name="input-field" src="../../../node_modules/@showings_quix/quix_ui/InputField"></import>
+<import name="my-button" src="../../components/button"></import>
+<import name="quist-swiper" src="../../../node_modules/quist-ui/components/quist-swiper"></import>
+<import name="my-input" src="../../components/input"></import>
+<import name="my-icon" src="../../components/icon"></import>
+<import name="quist-picker" src="../../../node_modules/quist-ui/components/quist-picker"></import>
+<import name="my-checkbox" src="../../components/checkbox"></import>
+<import name="my-checkbox-group" src="../../components/checkbox-group"></import>
+<import name="my-radio" src="../../components/radio"></import>
+<import name="my-radio-group" src="../../components/radio-group"></import>
+<import name="my-message" src="../../components/message"></import>
+<import name="my-toast" src="../../components/toast"></import>
+<import name="my-card" src="../../components/card"></import>
+<template>
+    <div style="flex-direction:row">
+    <white-space size = 'ssm'></white-space>
+    <div class="page">
+        <div class="main">
+            <div onclick="avatar" style="justify-content: center;align-content: center;display: flex;flex-direction: column;">
+                <div class = "avatar" if="{{!imgstate}}">
+                    <my-icon type="add" size="70"></my-icon>
+                </div>
+                <div class = "avatar" if="{{imgstate}}">
+                    <image src="{{img_uri}}" if="{{imgstate}}"></image>
+                </div>
+                <text style="color:#000000;font-size:35px;font-weight:300;">点击选择图片</text>
+                
+            </div>
+
+            <white-space size = 'sm'></white-space>
+        </div>
+
+        <white-space size = 'md'></white-space>
+
+        <div class="input">
+            <text class="item-txt">出租时间</text>
+
+            <white-space size = 'ssm'></white-space>
+
+            <text class="title">选择重复日期</text>
+                <my-checkbox-group id="myGroup" current="{{current}}" onchange="handleChange">
+                    <my-checkbox group="myGroup" for="{{week}}" position="left" value="{{$item.name}}"></my-checkbox>
+                </my-checkbox-group>
+            <div>
+            <my-card>
+                <div slot="title">
+                <div class="calendar-title">
+                    <my-icon type="time" size="48" color="#11c1f3"></my-icon>
+                    <text>选择开始时间</text>
+                </div>
+                </div>
+                <div class="card-content">
+                    <div class="currentDate" onclick="showpicker(1)">
+                    <div class="date">
+                        <text class="day">{{starttime}}</text>
+                    </div>
+                    <my-icon type="arrow-fwd" size="32"></my-icon>
+                    </div>
+                </div>
+            </my-card>
+            </div>
+
+            <white-space size = 'sm'></white-space>
+
+            <div style="display: flex;flex-direction: column;justify-content:flex-start;">
+            <my-card>
+                <div slot="title">
+                <div class="calendar-title">
+                    <my-icon type="time" size="48" color="#11c1f3"></my-icon>
+                    <text>选择结束时间</text>
+                </div>
+                </div>
+                <div class="card-content">
+                    <div class="currentDate" onclick="showpicker(2)">
+                    <div class="date">
+                        <text class="day">{{endtime}}</text>
+                    </div>
+                    <my-icon type="arrow-fwd" size="32"></my-icon>
+                    </div>
+                </div>
+            </my-card>
+            </div>
+
+            <white-space size = 'sm'></white-space>
+            <text class="item-txt">位置描述</text>
+            <input-field placeholder="例如：四川省成都市四川大学江安花园地下停车场A4" value="{{position}}" oninput="onInput1" clearable="true"></input-field>
+            <white-space size = 'sm'></white-space>
+            <text class="item-txt">出租价格</text>
+            <input-field type="number" placeholder="例如：30.00" value="{{price}}" oninput="onInput2" clearable="true"></input-field>
+            <white-space size = 'sm'></white-space>
+            <text class="item-txt">详情描述</text>
+            <input-field maxlength="50" placeholder="不用进入小区，在小区侧边就是停车场入口，进入后右转即为A区（不超过五十个字）" value="{{detail}}" oninput="onInput3" clearable="true"></input-field>
+            <white-space size = 'sm'></white-space>
+            <text class="item-txt">备注</text>
+            <input-field maxlength="20" placeholder="例如：位置宽敞 露天（不超过二十个字）" value="{{remark}}" oninput="onInput4" clearable="true"></input-field>
+        </div>
+
+        <white-space size = 'md'></white-space>
+
+        <div style="display: flex;flex-direction: row;justify-content:flex-end;">
+            <my-button type="login" inline="true" onclick="result">确认提交</my-button>
+            <white-space size = 'md'></white-space>
+            <white-space size = 'md'></white-space>
+            <my-message id="message"></my-message>
+            <my-toast id="toast"></my-toast>
+        </div>
+        
+        <quist-picker visible="{{pickerVisible1}}" @on-close="close(1)" list="{{list2}}" @on-select="select1()"></quist-picker>
+        <quist-picker visible="{{pickerVisible2}}" @on-close="close(2)" list="{{list2}}" @on-select="select2()"></quist-picker>
+        
+    </div>
+    
+    <white-space size = 'ssm'></white-space>
+    </div>
+</template>
+
+<style lang="less">
+    .page{
+        display: flex;
+        flex-direction: column;
+        justify-content:flex-start; 
+    }
+    
+    .avatar{
+        align-items:flex-start;
+        flex-direction:column;
+    }
+
+    .input{
+        align-items:flex-start;
+        flex-direction:column;
+        width: 100%;
+        border-bottom-width: 1px;
+        border-style: solid;
+        border-color: #dddddd;
+        padding-bottom: 10px;
+        padding-top: 10px;
+    }
+
+    .item-txt {
+        width: 180px;
+        color: #666666;
+        font-size: 32px;
+    }
+
+    .item-box {
+        margin: 20px;
+        flex-direction: row;
+    }
+
+    .swiper {
+        width: 100%;
+        height: 300px;
+    }
+
+    .calendar-title {
+        width: 100%;
+        padding-left: 20px;
+        align-items: center;
+        text {
+        margin-left: 20px;
+        }
+    }
+
+    .title {
+        margin: 20px;
+    }
+
+    .card-content {
+        width: 100%;
+        flex-direction: column;
+        align-content: center;
+        justify-content: center;
+    }
+
+    .currentDate {
+        width: 100%;
+        padding: 20px;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .date {
+        align-items: flex-end;
+    }
+
+    .main{
+        flex-direction: column;
+        align-items:flex-start;
+        justify-content:flex-start;
+        padding-left: 0px;
+    }
+</style>
+
+<script>
+import request from '@system.request' 
+import fetch from '@system.fetch' 
+import media from '@system.media' 
+import router from '@system.router' 
+import geolocation from '@system.geolocation'
+
+export default {
+    data(){
+        return{
+            longitude:0,
+            latitude:0,
+            imgstate:false,
+            img_uri:'',
+            position:'',
+            pickerVisible1: false,
+            pickerVisible2: false,
+            starttime: '',
+            endtime:'',
+            list2: [
+                ['00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23'],
+                ['00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46', '47', '48', '49', '50', '51', '52', '53', '54', '55', '56', '57', '58', '59']
+            ],
+            price:'',
+            detail:'',
+            remark:'',
+            week: [{
+                    id: 1,
+                    name: '每周一',
+                    checked: true
+                }, {
+                    id: 2,
+                    name: '每周二',
+                    checked: false
+                }, {
+                    id: 3,
+                    name: '每周三',
+                    checked: false
+                }, {
+                    id: 4,
+                    name: '每周四',
+                    checked: false
+                }, {
+                    id: 5,
+                    name: '每周五',
+                    checked: false
+                }, {
+                    id: 6,
+                    name: '每周六',
+                    checked: false
+                }, {
+                    id: 7,
+                    name: '每周日',
+                    checked: false
+                }],
+            current: [],
+            choose:[]
+        }
+    },
+
+    onInit() {
+    },
+
+    avatar(){
+        let that =this
+        media.pickImage({
+            success: function(data) {
+                that.imgstate = true
+                that.img_uri = data.uri
+                console.log(`handling success: ${data.uri}`)
+                router.replace({
+                    uri:'/pages/newmypark',
+                    params:{
+                        imgstate:that.imgstate,
+                        img_uri:that.img_uri,
+                        position:that.position,
+                        starttime:that.starttime,
+                        endtime:that.endtime,
+                        choose:that.choose,
+                        price: that.price,
+                        rent_state:0,
+                        remark:that.remark
+                    }
+                })
+            },
+            fail: function(data, code) {
+                console.log(`handling fail, code = ${code}`)
+            }
+        })
+    },
+
+    onInput1 ({ detail: { value } }) {
+        console.log(value)
+        this.position = value
+    },
+
+    onInput2 ({ detail: { value } }) {
+        console.log(value)
+        this.price = value
+    },
+
+    onInput3 ({ detail: { value } }) {
+        console.log(value)
+        this.detail = value
+    },
+
+    onInput4 ({ detail: { value } }) {
+        console.log(value)
+        this.remark = value
+    },
+
+    result(){
+        let that = this
+        if(that.img_urithat.position && that.starttime && that.detail && (this.starttime < this.endtime) && that.endtime && that.current && that.price && that.$app.$def.data.truestate){
+            
+            let i
+            for(i=0;i<that.current.length;i++)
+            {
+                switch(that.current[i]){
+                    case '每周一':
+                        that.choose[i] = 1
+                        break
+                    case '每周二':
+                        that.choose[i] = 2
+                        break
+                    case '每周三':
+                        that.choose[i] = 3
+                        break
+                    case '每周四':
+                        that.choose[i] = 4
+                        break
+                    case '每周五':
+                        that.choose[i] = 5
+                        break
+                    case '每周六':
+                        that.choose[i] = 6
+                        break
+                    case '每周日':
+                        that.choose[i] = 7
+                        break
+                }
+            }
+            console.log("choose")
+            console.log(that.choose)
+           
+            request.upload({
+                url: that.$app.$def.data.public_http + '/park-lot/new',
+                files: [{
+                    uri: that.img_uri,
+                    name: 'icon',
+                    filename: that.$app.$def.data.userid + 'price'+'park.png'
+                }],
+                data:{
+                    phone_number:that.$app.$def.data.userid,
+                    longitude:that.longitude,
+                    latitude:that.latitude,
+                    detail_address:that.position,
+                    rent_date:{
+                        datetime_start:that.starttime,
+                        datetime_end:that.endtime,
+                        frequent:that.choose
+                    },
+                    detail_word:that.detail,
+                    price: that.price,
+                    rent_state:0,
+                    remark:that.remark
+                }, 
+                success: function(res) {
+                    let response = JSON.parse(res.data)
+                    if(response.code==0){
+                        that.$child('toast').showToast({
+                            content: '添加成功！',
+                            type: 'success'
+                        })
+                        setTimeout(() => {
+                            that.$child('toast').hideToast()
+                        }, 2000)
+                        router.replace({
+                            uri: '/pages/mypark'
+                        })
+                    }
+                },
+                fail: function(data, code) {
+                    console.log(`handling fail, code = ${code}`)
+                }
+            })
+        }
+        else if(!that.img_uri){
+            that.$child('message').showMessage({
+                content: '请上传图片！',
+                type: 'warning'
+            })
+        }
+        else if(!that.$app.$def.data.truestate){
+            that.$child('toast').showToast({
+                content: '请先完成实名认证！正在跳转。。。',
+                type: 'warning'
+            })
+            setTimeout(() => {
+                that.$child('toast').hideToast()
+            }, 2000)
+            router.push({
+                uri: '/pages/register2',
+                params:{
+                    phone:that.$app.$def.data.userid
+                }
+            })
+        }
+        else if(this.starttime >= this.endtime){
+            that.$child('message').showMessage({
+                content: '时间选择错误！',
+                type: 'warning'
+            })
+        }else{
+            that.$child('message').showMessage({
+                content: '信息未填写完整！',
+                type: 'warning'
+            })
+        }
+    },
+
+    showpicker(i) {
+      this[`pickerVisible${i}`] = true
+    },
+    close(i) {
+      this[`pickerVisible${i}`] = false
+    },
+    select1(e) {
+      console.log('两列所选的值：', e.detail[0], e.detail[1])
+      if(e.detail[0].content==null || e.detail[1].content==null)
+        this.starttime='00:00'
+      else
+        this.starttime = e.detail[0].content + ':' + e.detail[1].content
+    },
+    select2(e) {
+      console.log('两列所选的值：', e.detail[0], e.detail[1])
+      if(e.detail[0].content==null || e.detail[1].content==null)
+        this.endtime='00:00'
+      else
+        this.endtime = e.detail[0].content + ':' + e.detail[1].content
+    },
+    handleChange({detail = {}}) {
+        const index = this.current.indexOf(detail.value)
+        index == -1 ? this.current.push(detail.value) : this.current.splice(index, 1)
+        console.log("current")
+        console.log(this.current)
+    }
+}
+</script>

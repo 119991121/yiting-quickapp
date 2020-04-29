@@ -1,0 +1,57 @@
+<import name="white-space" src="../../../node_modules/@showings_quix/quix_ui/WhiteSpace"></import>
+<import name="my-icon" src="../../components/icon"></import>
+ 
+
+<template>
+    <div class="page">
+        <div>
+            <my-icon type="{{type}}" size="48"></my-icon>
+            <text style="font-size: 35px;font-weight:500" >{{title}}</text>
+        </div>
+        <white-space size='ssm'></white-space>
+        <text style="font-size: 32px;font-weight:200;color:#666666;">{{content}}</text>
+    </div>
+</template>
+
+<style lang="less">
+.page{
+    display: flex;
+    flex-direction: column;
+    align-items:flex-start;
+    justify-content:flex-start; 
+}
+.tag{
+    display: flex;
+    flex-direction: row;
+    align-items:flex-start;
+    justify-content:flex-start;
+    border-radius:25px;
+    border-width:2px;
+    border-color:#e6d933;
+    background-color:#f8eba0 
+}
+</style>
+
+<script>
+export default {
+    data(){
+        return{
+            
+        }
+    },props: {
+    size: {
+      default: '135'
+    },
+    title:{
+        default:''
+    },
+    content:{
+        default:'',
+    },
+    type:{
+        default:''
+    }
+  },
+    
+}
+</script>

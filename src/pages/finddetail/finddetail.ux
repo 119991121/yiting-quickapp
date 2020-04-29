@@ -1,0 +1,269 @@
+<import name="quist-swiper" src="../../../node_modules/quist-ui/components/quist-swiper"></import>
+<import name="quist-toast" src="../../../node_modules/quist-ui/components/quist-toast"></import>
+<import name="white-space" src="../../../node_modules/@showings_quix/quix_ui/WhiteSpace"></import>
+<import name="flex" src="../../../node_modules/@showings_quix/quix_ui/Flex"></import>  
+<import name="my-divider" src="../../components/divider"></import>
+<import name="my-button" src="../../components/button"></import>
+<import name="my-park" src="../../components/park"></import>
+<import name="my-toast" src="../../components/toast"></import>
+
+<template>
+  <div>
+    <div class="page">
+        <div style="border-radius:15px;border-width:2px;border-color:#ffffff;background-color:#ffffff;width:100%;display: flex;flex-direction: column;">
+        <div class="swiper">
+            <quist-swiper visible="{{true}}" is-auto-play="{{true}}" time="{{5000}}" options="{{imageList}}" @on-click="showlightbox"></quist-swiper>
+            <quist-swiper visible="{{swiperBig}}" type="pop" options="{{imageList}}" @on-click="close"></quist-swiper>
+        </div>
+
+        <white-space size = 'ssm'></white-space>
+        
+        <flex align="center" direction="row">
+            <white-space size = 'ssm'></white-space>    
+            <flex align="flex-start" direction="column">
+                <text style="color:#800000;font-size:45px;font-weight:700;">￥ {{price}}/h</text>
+                <white-space size = 'ssm'></white-space>
+                <my-park type="pin" title="地址" content="{{address}}"></my-park>
+            </flex>
+            <white-space size = 'ssm'></white-space>
+        </flex>
+        <white-space size = 'ssm'></white-space>
+        </div>
+        
+        <white-space size = 'ssm'></white-space>
+
+        <div style="border-radius:15px;border-width:2px;border-color:#ffffff;background-color:#ffffff;width:100%;display: flex;flex-direction: column;">
+        <white-space size = 'ssm'></white-space>
+        <flex align="center" direction="row">
+            <white-space size = 'ssm'></white-space>    
+            <flex align="flex-start" direction="column">
+                <my-park type="help-circle-outline" title="描述" content="{{detaildes}}"></my-park>
+            </flex>
+            <white-space size = 'ssm'></white-space>
+        </flex>
+        <white-space size = 'ssm'></white-space>
+        </div>
+        
+        <white-space size = 'ssm'></white-space>
+
+        <div style="border-radius:15px;border-width:2px;border-color:#ffffff;background-color:#ffffff;width:100%;display: flex;flex-direction: column;">
+        <white-space size = 'ssm'></white-space>
+        <flex align="center" direction="row">
+            <white-space size = 'ssm'></white-space>    
+            <flex align="flex-start" direction="column">
+                <my-park size="200" type="time" title="时间安排" content="{{time}}"></my-park>
+            </flex>
+            <white-space size = 'ssm'></white-space>
+        </flex>
+
+        <my-divider></my-divider>
+
+        <flex align="center" direction="row">
+            <white-space size = 'ssm'></white-space>    
+            <flex align="flex-start" direction="column">
+                <my-park size="200" type="call" title="联系方式" content="{{rentername}}：{{renterphone}}"></my-park>
+            </flex>
+            <white-space size = 'ssm'></white-space>
+        </flex>
+        <white-space size = 'ssm'></white-space>
+        </div>
+        
+        <white-space size = 'ssm'></white-space>
+
+        <div style="border-radius:15px;border-width:2px;border-color:#ffffff;background-color:#ffffff;width:100%;display: flex;flex-direction: column;">
+        <white-space size = 'ssm'></white-space>
+        <flex align="center" direction="row">
+            <white-space size = 'ssm'></white-space>    
+            <flex align="flex-start" direction="column">
+                
+                <my-park type="pricetag" title="备注" content="{{remark}}"></my-park>
+            </flex>
+            <white-space size = 'ssm'></white-space>
+        </flex>
+        <white-space size = 'ssm'></white-space>
+        </div>
+
+        <div>
+        <my-divider></my-divider>
+        <div class="book" onclick="booking">
+          <text style="color:#000000;font-size:45px;font-weight:700;">立即预约</text>
+           <my-toast id="toast"></my-toast>
+        </div>
+        </div>
+    </div>
+   
+    </div>
+ </template>
+ 
+ <style>
+     .swiper {
+    width: 100%;
+    height: 300px;
+  }
+  .page{
+    display: flex;
+    flex-direction: column;
+    align-items:flex-start;
+    justify-content:flex-start;
+    width: 100%;
+    background-color:#e9e9e9;
+  }
+
+  .book{
+    position: fixed;bottom:0px;
+    background-color:#bcb12e;
+    width:100%;height:100px;
+    display: flex;
+    flex-direction: column;
+    align-items:center;
+    justify-content:center;
+  }
+ 
+ </style>
+ 
+ <script>
+import fetch from '@system.fetch' 
+import router from '@system.router' 
+  export default {
+    data() {
+      return {
+        swiperBig: false,
+        imageList: [],
+        address:'',
+        price:0,
+        time:'',
+        rentername:'',
+        renterphone:'',
+        detaildes:'',
+        remark:'',
+        park_lot_id:'',
+        state:'',
+        week:''
+      }
+    },
+    onInit(){
+      console.log("初始图片")
+      console.log(typeof this.imageList)
+      let that =this
+        fetch.fetch({
+          url: that.$app.$def.data.public_http + '/park-lot/getinfo',
+          method:'GET',
+          data:{
+            parking_lot_id:that.park_lot_id
+          },
+          responseType: 'json',
+          success: function(response) {
+            let data = response.data
+            console.log(data)
+            if(data.code==0){
+              that.address=data.data.detail_address,
+              that.price=data.data.price
+              let i
+              let judge = ''
+              let len = data.data.rent_date[0].frequency.length
+              if(len==7)
+                that.week ='每天'
+              else {
+                for(i=0;i<len;i++)
+                  judge=judge+data.data.rent_date[0].frequency[i]
+              }
+              if(judge=='12345')
+                that.week = '工作日'
+              else if(judge=='67')
+                that.week = '周末'
+              else{
+                that.week = '每周'
+                for(i=0;i<len;i++){
+                  switch(data.data.rent_date[0].frequency[i]){
+                    case 1:
+                      that.week = that.week+'一 '
+                      break
+                    case 2:
+                      that.week = that.week+'二 '
+                      break
+                    case 3:
+                      that.week = that.week+'三 '
+                      break
+                    case 4:
+                      that.week = that.week+'四 '
+                      break
+                    case 5:
+                      that.week = that.week+'五 '
+                      break
+                    case 6:
+                      that.week = that.week+'六 '
+                      break
+                    case 7:
+                      that.week = that.week+'日 '
+                      break
+                  }
+                }
+              }
+              that.time=that.week + "  " + data.data.rent_date[0].datetime_start + "-" + data.data.rent_date[0].datetime_end,
+              that.rentername = data.data.renter_name,
+              that.renterphone = data.data.renter_id,
+              that.remark = data.data.remark
+              if(data.data.rent_state==-1)
+                that.state = '暂停出租'
+              else if(data.data.rent_state==0)
+                that.state = '空闲中'
+              else if(data.data.rent_state==1)
+                that.state = '预约中'
+              else(data.data.rent_state==2)
+                that.state = '出租中'
+            }
+          },
+        })
+    },
+    showlightbox() {
+      this.swiperBig = true
+    },
+    close() {
+      this.swiperBig = false
+    },
+    closeb() {
+      this.swiperBigb = false
+    },
+    booking(){
+      if(this.$app.$def.data.loginstate && this.$app.$def.data.truestate){
+        router.push({
+            uri: '/pages/book',
+            params:{
+              park_lot_id:this.park_lot_id,
+              renterphnum:this.renterphone,
+              rentername:this.rentername,
+              price:this.price,
+              img:this.imageList[0],
+              address:this.address
+            }
+        })
+      }
+      else if(!this.$app.$def.data.loginstate){
+        this.$child('toast').showToast({
+          content: '请先登录！正在跳转。。。',
+          type: 'warning'
+        })
+        setTimeout(() => {
+          this.$child('toast').hideToast()
+        }, 2000)
+        router.push({
+          uri: '/pages/login'
+        })
+    }else{
+      this.$child('toast').showToast({
+          content: '请先完成实名认证！正在跳转。。。',
+          type: 'warning'
+        })
+        setTimeout(() => {
+          this.$child('toast').hideToast()
+        }, 2000)
+        router.push({
+          uri: '/pages/register2',
+          params:{
+            phone:this.$app.$def.data.userid
+          }
+        })
+    }
+    }
+  }
+</script>

@@ -1,0 +1,302 @@
+<import name="my-tabbar" src="../../components/tabbar"></import>
+<import name="my-card" src="../../components/card"></import>
+<import name="my-flex" src="../../../node_modules/@showings_quix/quix_ui/Flex"></import>
+<import name="white-space" src="../../../node_modules/@showings_quix/quix_ui/WhiteSpace"></import>
+<import name="my-button" src="../../components/button"></import>
+<import name="my-navbar" src="../../components/navbar"></import>
+<import name="my-icon" src="../../components/icon"></import>
+<import name="my-message" src="../../components/message"></import>
+<import name="my-toast" src="../../components/toast"></import>
+<import name="my-modal" src="../../../node_modules/@showings_quix/quix_ui/Modal"></import>
+
+<template>
+  <div class="block">
+    <div class="tip">
+      <white-space></white-space>
+      <white-space></white-space>
+      <white-space></white-space>
+      <white-space></white-space>
+      <text style="font-size:40px;font-weight: 600">我的车位</text>
+      <white-space></white-space>
+      <white-space></white-space>
+      <white-space></white-space>
+      <white-space></white-space>
+      <div class="buttom">
+        
+      <my-icon type="add" size=70 onclick="add" if="{{loginstate}}" ></my-icon>
+      </div>
+    </div>
+
+    <white-space size='md' if="{{!loginstate}}"></white-space>
+    <text style="font-size:40px;font-weight: 600" if="{{!loginstate}}" onclick="login">点击立即登录</text>
+
+    <div>
+        <list if="{{loginstate}}">
+            <!-- 商品列表 -->
+                <block for="parklist">
+                <list-item type="product"  class="block">
+                <my-flex align="center" direction="column"  onclick="detail">
+                    <my-card title1="出租状态： " title2="{{$item.a}}" thumb="{{$item.image_urls[0]}}" extra="查看详情" footer="车位编号:{{$item.park_lot_id}}">
+                        <text>车位地址：{{$item.detail_address}}</text>
+                    </my-card>
+                </my-flex>
+                <div style="display: flex;flex-direction: row;justify-content:flex-end;">
+                  <white-space size = 'md'></white-space>
+                  <white-space size = 'md'></white-space>
+                  <white-space size = 'md'></white-space>
+                  <white-space size = 'md'></white-space>
+                  <my-button type="register" inline="true" onclick="edit" size="small">编辑</my-button>
+                  <white-space size = 'md'></white-space>
+                  <my-button type="error" inline="true" onclick="del" size="small">删除</my-button>
+                </div>
+                </list-item>
+                </block>
+        </list>
+        <my-modal visible="{{visible}}" onclose="onClose" message="{{message}}" onclick="onClick" footer-list="{{footer}}"></my-modal>
+    </div>
+
+    <my-tabbar tabbar="{{tabbarData}}"></my-tabbar>
+    <my-toast id="toast"></my-toast>
+
+    
+  </div>
+</template>
+
+<style lang="less">
+.block{
+  display: flex;
+  flex-direction: column;
+  align-items:center;
+  justify-content:flex-start;
+}
+
+.tip{
+    display: flex;
+    align-items:center;
+    flex-direction: row;
+    justify-content:center;
+    background-color:#e6d933;
+    width:100%;
+    height:150px;
+    border-bottom-left-radius:25px;
+    border-bottom-right-radius:25px;
+    border-bottom-width:10px;
+    border-bottom-color:#e6d933
+  }
+
+  .load-more{
+    display: flex;
+    flex-direction:column;
+    justify-content:flex-start;
+    align-items: flex-start;
+  }
+
+  .buttom{
+    justify-content: space-between;
+  margin: 10px 0;
+  }
+</style>
+
+<script>
+import fetch from '@system.fetch' 
+import router from '@system.router' 
+
+  export default {
+    data() {
+        return {
+            loginstate:false,
+            parklist:[],
+            tabbarData: [
+                {
+                    iconPath: '../../Common/1.png',
+                    selectedIconPath: '../../Common/4.png',
+                    pagePath: '/pages/findpark',
+                    text: '找车位',
+                    active: false
+                },
+                {
+                    iconPath: '../../Common/2.png',
+                    selectedIconPath: '../../Common/5.png',
+                    pagePath: '/pages/mypark',
+                    text: '我的车位',
+                    active: true
+                },
+                {
+                    iconPath: '../../Common/3.png',
+                    selectedIconPath: '../../Common/6.png',
+                    pagePath: '/pages/user',
+                    text: '我的',
+                    active: false
+                }
+            ],
+            visible: false,
+            message: '确认删除车位？',
+            footer: [
+                {
+                    label: '确定',
+                    color: '#c41d06'
+                }, 
+                {
+                    label: '取消'
+                }
+            ],
+        }
+    },
+
+    onInit () {
+      router.clear()
+
+      this.loginstate = this.$app.$def.data.loginstate
+
+      if(this.$app.$def.data.loginstate){
+        let that = this
+        fetch.fetch({
+          url: that.$app.$def.data.public_http + '/park-lot/userlist',
+          method:'GET',
+          data:{
+            phone_number:that.$app.$def.data.userid
+          },
+          responseType: 'json',
+          success: function(response) {
+            let data = response.data
+            console.log(data.data)
+            if(data.code==0){
+              that.parklist = data.data
+              let i
+              for(i=0;i<that.parklist.length;i++){
+                  switch(that.parklist[i].rent_state){
+                    case -1:
+                        that.parklist[i].a = "暂停出租"
+                        break
+                    case 0:
+                        that.parklist[i].a = "空闲中"
+                        break
+                    case 1:
+                        that.parklist[i].a = "预约中"
+                        break
+                    case 2:
+                        that.parklist[i].a = "出租中"
+                        break
+                  }
+                  console.log(that.parklist) 
+              }
+            }
+          },
+        })  
+      }
+    },
+
+    detail(){
+      console.log(this.$item.park_lot_id)
+        router.push({
+          uri: '/pages/myparkdetail',
+          params:{
+            park_lot_id:this.$item.park_lot_id,
+            imageList:this.$item.image_urls,
+            state:this.$item.a
+          }
+      })
+    },
+
+    edit(){
+      if(this.$app.$def.data.truestate){
+        router.push({
+            uri: '/pages/editmypark',
+            params:{
+              park_lot_id:this.$item.park_lot_id
+            }
+        })
+      }else{
+        this.$child('toast').showToast({
+          content: '请先完成实名认证！正在跳转。。。',
+          type: 'warning'
+        })
+        setTimeout(() => {
+          this.$child('toast').hideToast()
+        }, 2000)
+        router.push({
+          uri: '/pages/register2',
+          params:{
+            phone:this.$app.$def.data.userid
+          }
+        })
+      }
+    },
+
+    del(){
+      if(this.$app.$def.data.truestate){
+        this.visible = true
+      }else{
+        this.$child('toast').showToast({
+          content: '请先完成实名认证！正在跳转。。。',
+          type: 'warning'
+        })
+        setTimeout(() => {
+          this.$child('toast').hideToast()
+        }, 2000)
+        router.push({
+          uri: '/pages/register2',
+          params:{
+            phone:this.$app.$def.data.userid
+          }
+        })
+      }
+    },
+    onClose () {
+      this.visible = false
+    },
+    onClick () {
+        fetch.fetch({
+          url: this.$app.$def.data.public_http + '/park-lot/del',
+          method:'POST',
+          data:{
+            park_lot_id:this.$item.park_lot_id
+          },
+          responseType: 'json',
+          success: function(response) {
+            let data = response.data
+            if(data.code==0){
+              this.$child('toast').showToast({
+                content: '删除成功',
+                type: 'success'
+              })
+              setTimeout(() => {
+                this.$child('toast').hideToast()
+              }, 2000)
+              router.replace({
+                uri:'/pages/mypark'
+              })
+            }
+          },
+        })
+    },
+
+    add() {
+      if(this.$app.$def.data.truestate){
+        router.push({
+          uri: '/pages/newmypark'
+        })
+      }else{
+        this.$child('toast').showToast({
+          content: '请先完成实名认证！正在跳转。。。',
+          type: 'warning'
+        })
+        setTimeout(() => {
+          this.$child('toast').hideToast()
+        }, 2000)
+        router.push({
+          uri: '/pages/register2',
+          params:{
+            phone:this.$app.$def.data.userid
+          }
+        })
+      }
+    },
+
+    login(){
+      router.push({
+        uri: '/pages/login'
+      })
+    }
+}
+</script>

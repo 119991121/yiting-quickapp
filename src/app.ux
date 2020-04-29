@@ -1,0 +1,24 @@
+<script>
+/**
+* 应用级别的配置，供所有页面公用
+*/
+import util from './util'
+
+export default {
+  data:{
+      loginstate:false,
+      truestate:false,
+      userid:'',
+      username:'',
+      useravatar:'',
+      userpassword:'',
+      usersex:'',
+      public_http:'http://192.168.43.230:8000/api/v1',
+      pic_http:'http://114.55.255.62:8000'
+  },
+  showMenu: util.showMenu,
+  createShortcut: util.createShortcut,
+
+
+}
+</script>

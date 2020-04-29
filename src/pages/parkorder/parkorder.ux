@@ -1,0 +1,110 @@
+<import name="my-card" src="../../components/card"></import>
+<import name="my-flex" src="../../../node_modules/@showings_quix/quix_ui/Flex"></import>
+
+<template>
+  <div >
+    <div>
+        <list>
+            <!-- 商品列表 -->
+                <block for="parkorderlist">
+                <list-item type="product">
+                <my-flex align="center" direction="column"  onclick="detail">
+                    <my-card title1="订单状态： " title2="{{$item.tenant}}" thumb="{{$item.image_url[0]}}" extra="查看详情" footer="订单编号:{{$item.order_id}}">
+                        <text>租借人信息：{{$item.lessor_nickname}}-{{$item.lessor}}</text>
+                    </my-card>
+                </my-flex>
+                </list-item>
+                </block>
+        </list>
+    </div>
+  </div>
+</template>
+
+<style lang="less">
+  .load-more{
+    display: flex;
+    flex-direction:column;
+    justify-content:flex-start;
+    align-items: flex-start;
+  }
+</style>
+
+<script>
+import fetch from '@system.fetch' 
+import router from '@system.router' 
+
+  export default {
+    data() {
+        return {
+            park_lot_id:'',
+            parkorderlist:[],
+        }
+    },
+
+    onInit() {
+      let that = this
+        fetch.fetch({
+          url: this.$app.$def.data.public_http + '/order/park-lot',
+          method:'GET',
+          data:{
+            park_lot_id:this.park_lot_id
+          },
+          responseType: 'json',
+          success: function(response) {
+            let data = response.data
+            if(data.code==0){
+              that.parkorderlist = data.data
+              let i
+              for(i=0;i<that.parkorderlist.length;i++){
+                  switch(that.parkorderlist[i].state){
+                    case -1:
+                        that.parkorderlist[i].tenant = '已取消预约'
+                        break
+                    case 0:
+                        that.parkorderlist[i].tenant = '预约中'
+                        break
+                    case 1:
+                        that.parkorderlist[i].tenant = '订单进行中'
+                        break
+                    case 2:
+                        that.parkorderlist[i].tenant = '订单待支付'
+                        break
+                    case 3:
+                        that.parkorderlist[i].tenant = '订单已完成'
+                        break
+                  }
+              }
+            }
+          },
+        })
+    },
+
+    detail(){
+      if(this.$app.$def.data.truestate){
+        router.push({
+            uri: '/pages/orderdetail',
+            params:{
+              orderid:this.$item.order_id,
+              img:this.$item.image_url[0],
+              statecode:this.$item.state,
+              isbuttom:false
+            }
+        })
+      }else{
+        this.$child('toast').showToast({
+          content: '请先完成实名认证！正在跳转。。。',
+          type: 'warning'
+        })
+        setTimeout(() => {
+          this.$child('toast').hideToast()
+        }, 2000)
+        router.push({
+          uri: '/pages/register2',
+          params:{
+            phone:this.$app.$def.data.userid
+          }
+        })
+      }
+    }
+}
+</script>

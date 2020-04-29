@@ -1,0 +1,342 @@
+<import name="my-card" src="../../components/card"></import>
+<import name="quist-toast" src="../../../node_modules/quist-ui/components/quist-toast"></import>
+<import name="white-space" src="../../../node_modules/@showings_quix/quix_ui/WhiteSpace"></import>
+<import name="flex" src="../../../node_modules/@showings_quix/quix_ui/Flex"></import>  
+<import name="my-divider" src="../../components/divider"></import>
+<import name="my-button" src="../../components/button"></import>
+<import name="my-order" src="../../components/order"></import>
+<import name="my-modal" src="../../../node_modules/@showings_quix/quix_ui/Modal"></import>
+
+<template>
+  <div>
+    <div class="page">
+        <div class="tip"  if="statecode==-1">
+          <text style="font-size: 40px;font-weight: 500;">预约已取消</text>
+        </div>
+
+        <div class="tip"  if="statecode==0">
+          <text style="font-size: 40px;font-weight: 500;">预约中</text>
+        </div>
+
+        <div class="tip"  if="statecode==1">
+          <text style="font-size: 40px;font-weight: 500;">订单进行中</text>
+        </div>
+
+        <div class="tip"  if="statecode==2">
+          <text style="font-size: 40px;font-weight: 500;">\t订单待支付\t￥ {{totalprice}}</text>
+        </div>
+
+        <div class="tip"  if="statecode==3">
+          <text style="font-size: 40px;font-weight: 500;">\t订单已完成\t￥ {{totalprice}}</text>
+        </div>
+
+        <my-card title1="车位主昵称： " title2="{{rentername}}" thumb="{{img}}" footer="单价：￥ {{price}}/h" onclick="todetail">
+        </my-card>
+
+        <my-divider></my-divider>
+
+        <flex align="center" direction="row">
+            <white-space size = 'ssm'></white-space>    
+            
+              <flex align="flex-start" direction="column">
+                <text style="font-weight: 500;font-size:38px;">订单详情</text>
+
+                <white-space size = 'md'></white-space>
+
+                <my-order title="订单编号" content="{{orderid}}"></my-order>
+                
+                <my-divider></my-divider>
+
+                 <my-order title="租用人昵称" content="{{name}}"></my-order>
+                
+                <my-divider></my-divider>
+
+                 <my-order title="租用人电话" content="{{phnum}}"></my-order>
+                
+                <my-divider></my-divider>
+
+                <my-order title="预订开始时间" content="{{bookstarttime}}"></my-order>
+                
+                <my-divider></my-divider>
+
+                <my-order title="预订结束时间" content="{{bookendtime}}"></my-order>
+
+                <my-divider if="statecode==1 || statecode==2 || statecode==3"></my-divider>
+
+                <my-order title="开始使用时间" content="{{starttime}}" if="statecode==1 || statecode==2 || statecode==3"></my-order>
+
+                <my-divider if="statecode==2 || statecode==2"></my-divider>
+                
+                <my-order title="结束使用时间" content="{{endtime}}" if="statecode==2 || statecode==2"></my-order>
+              </flex>
+            <white-space size = 'ssm'></white-space>
+        </flex>
+
+        <white-space size = 'md' if="statecode==0"></white-space>
+        <flex align="flex-start" justify="flex-end" direction="row"  if="(statecode==0) && isbuttom ">
+            <my-button type="login" inline="true" onclick="click1">开始使用</my-button>
+          <white-space size = 'md'></white-space>
+          <my-button type="error" inline="true" onclick="click2">取消预约</my-button>
+          <white-space size = 'md'></white-space>
+        </flex>
+
+        <white-space size = 'md'  if="statecode==1"></white-space>
+        <flex align="flex-start" justify="flex-end" direction="row"  if="(statecode==1) && isbuttom">
+            <my-button type="login" inline="true" onclick="click3">结束订单</my-button>
+            <white-space size = 'md'></white-space>
+            <white-space size = 'md'></white-space>
+        </flex>
+
+        <white-space size = 'md'  if="statecode==2"></white-space>
+        <flex align="flex-start" justify="flex-end" direction="row"  if="(statecode==2) && isbuttom">
+            <my-button type="login" inline="true" onclick="topay" size="small">确认付款</my-button>
+            <white-space size = 'md'></white-space>
+            <white-space size = 'md'></white-space>
+        </flex>
+      </div>
+
+      <my-modal visible="{{visible1}}" onclose="onClose1" message="{{message1}}" onclick="start" footer-list="{{footer}}"></my-modal>
+      <my-modal visible="{{visible2}}" onclose="onClose2" message="{{message2}}" onclick="delbook" footer-list="{{footer}}"></my-modal>
+      <my-modal visible="{{visible3}}" onclose="onClose3" message="{{message3}}" onclick="end" footer-list="{{footer}}"></my-modal>
+
+    </div>
+ </template>
+ 
+ <style>
+     .swiper {
+    width: 100%;
+    height: 300px;
+  }
+  .page{
+    display: flex;
+    flex-direction: column;
+    align-items:flex-start;
+    justify-content:flex-start;
+    width: 100%;
+  }
+
+  .tip{
+    background-color:#eaec45;
+    width:100%;
+    height:150px;
+    align-items:center;
+    justify-content:center;
+    border-bottom-left-radius:15px;
+    border-bottom-right-radius:15px;
+    border-bottom-width:10px;
+    border-bottom-color:#eaec45
+  }
+ 
+ </style>
+ 
+ <script>
+import fetch from '@system.fetch' 
+import router from '@system.router' 
+  export default {
+    data() {
+      return {
+        rentername:'',
+        img:'',
+        price:0,
+        statecode:0,
+        totalprice:0,
+        orderid:0,
+        name:'',
+        phnum:'',
+        bookstarttime:'',
+        bookendtime:'',
+        starttime:'',
+        endtime:'',
+        park_lot:'',
+        visible1: false,
+        message1: '确认开始？',
+        visible2: false,
+        message2: '确认取消？',
+        visible3: false,
+        message3: '确认结束？',
+        footer: [{
+          label: '确定',
+          color: '#c41d06'
+        }, 
+        {
+          label: '取消'
+        }],
+        isbuttom:true
+      }
+    },
+    onInit() {
+      let that = this
+      fetch.fetch({
+          url: that.$app.$def.data.public_http + '/order/tenant',
+          method:'GET',
+          data:{
+            order_id:that.orderid
+          },
+          responseType: 'json',
+          success: function(response) {
+            let data = response.data
+            console.log(data.data)
+            if(data.code==0){
+              that.rentername=data.data.tenant_nickname
+              that.price=data.data.price
+              that.statecode=data.data.state
+              that.name=data.data.lessor_nickname
+              that.phnum=data.data.lessor
+              that.bookstarttime=data.data.book_time_start
+              that.bookendtime=data.data.book_time_end
+              that.starttime=data.data.time_start
+              that.endtime=data.data.time_end
+              that.park_lot=data.data.park_lot
+              that.totalprice=data.data.tot_price
+            }
+          },
+        })    
+    },
+    showlightbox() {
+      this.swiperBig = true
+    },
+    close() {
+      this.swiperBig = false
+    },
+    closeb() {
+      this.swiperBigb = false
+    },
+    
+    click1(){
+      this.visible1 = true
+    },
+    onClose1 () {
+      this.visible1 = false
+    },
+    start({ detail: { idx } }){
+      if(idx==0){
+      let that = this
+      fetch.fetch({
+          url: that.$app.$def.data.public_http + '/order/begin',
+          method:'GET',
+          data:{
+            order_id:that.orderid
+          },
+          responseType: 'json',
+          success: function(response) {
+            let data = response.data
+            that.statecode = 1
+            if(data.code==0){
+              router.replace({
+                uri: '/pages/orderdetail',
+                params:{
+                  order_id:that.orderid,
+                  img:that.img,
+                  statecode:that.statecode
+                }
+              })
+            }
+          },
+      })
+      }
+    },
+
+    click2(){
+      this.visible2 = true
+    },
+    onClose2 () {
+      this.visible2 = false
+    },
+    delbook({ detail: { idx } }){
+      if(idx==0){
+      let that = this
+      fetch.fetch({
+          url: that.$app.$def.data.public_http + '/order/cancel',
+          method:'GET',
+          data:{
+            order_id:that.orderid
+          },
+          responseType: 'json',
+          success: function(response) {
+            let data = response.data
+            that.statecode = -1
+            if(data.code==0){
+              router.replace({
+                uri: '/pages/orderdetail',
+                params:{
+                  order_id:that.orderid,
+                  img:that.img,
+                  statecode:that.statecode
+                }
+              })
+            }
+          },
+      })}      
+    },
+
+    click3(){
+      this.visible3 = true
+    },
+    onClose3 () {
+      this.visible3 = false
+    },
+    end({ detail: { idx } }){
+      if(idx==0){
+      let that = this
+      fetch.fetch({
+          url: that.$app.$def.data.public_http + '/order/end',
+          method:'GET',
+          data:{
+            order_id:that.orderid,
+                  img:that.img
+          },
+          responseType: 'json',
+          success: function(response) {
+            let data = response.data
+            that.statecode = 2
+            if(data.code==0){
+              router.replace({
+                uri: '/pages/orderdetail',
+                params:{
+                  order_id:that.orderid,
+                  img:that.img,
+                  statecode:that.statecode
+                }
+              })
+            }
+          },
+      })
+      }
+    },
+    
+    topay(){
+      let that = this
+      fetch.fetch({
+          url: that.$app.$def.data.public_http + '/order/pay',
+          method:'GET',
+          data:{
+            order_id:that.orderid
+          },
+          responseType: 'json',
+          success: function(response) {
+            let data = response.data
+            that.statecode = 3
+            if(data.code==0){
+              router.replace({
+                uri: '/pages/orderdetail',
+                params:{
+                  order_id:that.orderid,
+                  img:that.img,
+                  statecode:that.statecode
+                }
+              })
+            }
+          },
+      })
+    },
+
+    todetail(){
+      router.push({
+          uri: '/pages/findparkdetail',
+          params:{
+            park_lot:this.park_lot
+          }
+      })
+    }
+  }
+</script>

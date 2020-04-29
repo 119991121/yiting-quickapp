@@ -1,0 +1,182 @@
+<import name="white-space" src="../../../node_modules/@showings_quix/quix_ui/WhiteSpace"></import>
+<import name="input-field" src="../../../node_modules/@showings_quix/quix_ui/InputField"></import>
+<import name="my-divider" src="../../components/divider"></import>  
+<import name="my-icon" src="../../components/icon"></import>
+<import name="my-message" src="../../components/message"></import>
+<import name="my-toast" src="../../components/toast"></import>
+
+<template>
+    <div class="page">
+        <div style="display: flex;flex-direction: column;align-items:flex-start;justify-content:flex-start;">
+            <white-space size = 'sm'></white-space>
+            <div>
+                <my-icon type="arrow-round-back" size="100" onclick="back"></my-icon>
+                <text style="color:#000000;font-size:40px;font-weight:800;">返回</text>
+            </div>
+        </div>
+
+        <white-space size = 'sm'></white-space>
+        
+        <div class="main">
+            <text style="color:#000000;font-size:50px;font-weight:800;">实名验证</text>
+            <white-space size = 'sm'></white-space>
+
+            <div class="input">
+                <white-space size = 'ssm'></white-space>
+                <div>
+                    <my-icon type="person" size="40"></my-icon>
+                    <input-field type="text" placeholder="请输入真实姓名" value="{{truename}}" oninput="onInput1" clearable="true" style="font-size: 30px;font-weight: 200;color:#000000"></input-field>
+                </div>
+                <my-divider></my-divider>
+                <div>
+                    <my-icon type="finger-print" size="40"></my-icon>
+                    <input-field type="number" placeholder="请输入身份证号" value="{{id}}" oninput="onInput2" clearable="true" style="font-size: 30px;font-weight: 200;color:#000000"></input-field>
+                </div>
+            </div>
+
+            <white-space size = 'md'></white-space>
+
+            <div class ="login"  onclick="next">
+                <text style="color:#ffffff;font-size:40px;font-weight:300;">完成</text>
+                <my-message id="message"></my-message>
+                <my-toast id="toast"></my-toast>
+            </div>
+        </div>
+        
+    </div>
+</template>
+
+<style>
+.page{
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    background-color: #f3e580
+  }
+
+
+  .main{
+    display: flex;
+    flex-direction: column;
+    align-items:center;
+    justify-content:flex-start;
+  }
+
+  .input{
+        width: 70%;
+        height:160px;
+        background-color:#ffffff;
+        border-color: #ffffff;
+        border-radius: 10px;
+        border-width: 10px;
+        display: flex;
+        flex-direction: column;
+  }
+
+  .login{
+      width: 70%;
+        height:90px;
+        background-color:#000000;
+        border-color: #000000;
+        border-radius: 10px;
+        border-width: 10px;
+        display: flex;
+        flex-direction: column;
+        align-items:center;
+        justify-content:center;
+  }
+</style>
+
+<script>
+import fetch from '@system.fetch' 
+import router from '@system.router' 
+export default {
+    data() {
+        return {
+            phone:'',
+            truename: '',
+            id: '',
+        }
+    },
+
+    next() {
+      if(this.truename && this.id)
+        {
+            let that = this
+            fetch.fetch({
+                url: that.$app.$def.data.public_http + '/auth/idcert',
+                method:'POST',
+                data:{
+                    phone_number:that.phone,
+                    name:that.truename,
+                    ID:that.id
+                },
+                responseType: 'json',
+                success: function(response) {
+                    if(response.data.code==0){
+                        that.$app.$def.data.userid = that.phone
+                        that.$app.$def.data.truestate = true
+                        that.$child('toast').showToast({
+                            content: '认证成功！',
+                            type: 'success'
+                        })
+                        setTimeout(() => {
+                            that.$child('toast').hideToast()
+                        }, 5000)
+                        router.replace({
+                            uri:'/pages/user'
+                        })
+                    }
+                    else if(response.data.code==204){
+                        that.$child('message').showMessage({
+                            content: '身份证格式错误！请重新输入！',
+                            type: 'error'
+                        })
+                    }
+                    else if(response.data.code==205){
+                        that.$child('message').showMessage({
+                            content: '身份证信息不匹配！请重新输入!',
+                            type: 'error'
+                        })
+                    }
+                    else if(response.data.code==206){
+                        that.$child('message').showMessage({
+                            content: '该身份证号码不存在！请重新输入!',
+                            type: 'error'
+                        })
+                    }
+                },
+                fail: function(data, code) {
+                    console.log(code)
+                }
+            })
+        }
+        else{
+            this.$child('message').showMessage({
+                content: '未填写完整信息',
+                type: 'warning'
+            })
+        }
+    },
+
+    back(){
+        this.$app.$def.data.truestate = false
+        this.$app.$def.data.loginstate = true
+        router.replace({
+            uri:'/pages/user'
+        })
+    },
+
+    onInput1 ({ detail: { value } }) {
+        console.log(value)
+        this.truename = value
+    },
+
+    onInput2 ({ detail: { value } }) {
+        console.log(value)
+        this.id = value
+    },
+    
+}
+</script>

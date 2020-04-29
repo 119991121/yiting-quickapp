@@ -1,0 +1,367 @@
+<import name="white-space" src="../../../node_modules/@showings_quix/quix_ui/WhiteSpace"></import>
+<import name="my-divider" src="../../components/divider"></import>
+<import name="my-card" src="../../components/card"></import>
+<import name="my-input" src="../../components/input"></import>
+<import name="my-calendar" src="../../components/calendar"></import>
+<import name="my-icon" src="../../components/icon"></import>
+<import name="quist-picker" src="../../../node_modules/quist-ui/components/quist-picker"></import>
+<import name="my-button" src="../../components/button"></import>
+<import name="my-message" src="../../components/message"></import>
+<import name="my-toast" src="../../components/toast"></import>
+
+<template>
+    <div>
+        <div class="page">
+            <white-space size='sm'></white-space>
+            
+            <new-card title1="车位主昵称： " title2="{{rentername}}" thumb="{{img}}" footer="单价：￥ {{price}}/h">
+                <text >车位地址：{{address}}</text>
+            </new-card>
+
+            <my-divider></my-divider>
+            <div class="wrap">
+                <text class="title">基本信息</text>
+                <my-input value="{{petname}}" title="昵称" disabled="true"></my-input>
+                <my-input value="{{phnum}}" title="电话" disabled="true"></my-input>
+                <my-input value="{{rentername}}" title="车位主昵称" disabled="true"></my-input>
+                <my-input value="{{renterphnum}}" title="车位主电话" disabled="true"></my-input>
+            </div>
+        <my-divider></my-divider>
+
+        <div>
+            <div>
+                <div slot="title">
+                <div class="calendar-title">
+                    <my-icon type="time" size="48" color="#11c1f3"></my-icon>
+                    <text>选择日期</text>
+                </div>
+                </div>
+                <div class="card-content">
+                    <div class="currentDate" onclick="openCalendar('single')">
+                    <div class="date">
+                        <text class="day">{{singleTrip.year}}-{{singleTrip.month}}-{{singleTrip.day}}</text>
+                        <text class="week">周{{singleTrip.week}}</text>
+                    </div>
+                    <my-icon type="arrow-fwd" size="32"></my-icon>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <white-space size = 'sm'></white-space>
+
+        <div>
+            <my-card>
+                <div slot="title">
+                <div class="calendar-title">
+                    <my-icon type="time" size="48" color="#11c1f3"></my-icon>
+                    <text>选择开始时间</text>
+                </div>
+                </div>
+                <div class="card-content">
+                    <div class="currentDate" onclick="showpicker(1)">
+                    <div class="date">
+                        <text class="day">{{starttime}}</text>
+                    </div>
+                    <my-icon type="arrow-fwd" size="32"></my-icon>
+                    </div>
+                </div>
+            </my-card>
+        </div>
+
+        <white-space size = 'sm'></white-space>
+
+        <div style="display: flex;flex-direction: column;justify-content:flex-start;">
+            <my-card>
+                <div slot="title">
+                <div class="calendar-title">
+                    <my-icon type="time" size="48" color="#11c1f3"></my-icon>
+                    <text>选择结束时间</text>
+                </div>
+                </div>
+                <div class="card-content">
+                    <div class="currentDate" onclick="showpicker(2)">
+                    <div class="date">
+                        <text class="day">{{endtime}}</text>
+                    </div>
+                    <my-icon type="arrow-fwd" size="32"></my-icon>
+                    </div>
+                </div>
+            </my-card>
+
+            <white-space size = 'md'></white-space>
+
+            <div style="display: flex;flex-direction: row;justify-content:flex-end;">
+                <my-button type="login" inline="true" onclick="result">提交订单</my-button>
+                <white-space size = 'md'></white-space>
+                <white-space size = 'md'></white-space>
+                <my-message id="message"></my-message>
+                <my-toast id="toast"></my-toast>
+            </div>
+        </div>
+
+        <my-calendar visible="{{open}}" trip="{{tripType}}" onschedule="getSchedule"></my-calendar>
+        <quist-picker visible="{{pickerVisible1}}" @on-close="close(1)" list="{{list2}}" @on-select="select1()"></quist-picker>
+        <quist-picker visible="{{pickerVisible2}}" @on-close="close(2)" list="{{list2}}" @on-select="select2()"></quist-picker>
+        
+        </div>
+    </div>
+</template>
+
+<style lang="less">
+    .page{
+    display: flex;
+    flex-direction: column;
+    justify-content:flex-start;
+    width: 100%;
+    background-color: #f7f7f7;
+  }
+.calendar-title {
+    width: 100%;
+    padding-left: 20px;
+    align-items: center;
+    text {
+      margin-left: 20px;
+    }
+}
+
+    .wrap {
+    flex-direction: column;
+    }
+    .title {
+        margin: 20px;
+    }
+    .card-content {
+    width: 100%;
+    flex-direction: column;
+    align-content: center;
+    justify-content: center;
+  }
+
+  .currentDate {
+      width: 100%;
+      padding: 20px;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .line {
+        height: 1px;
+        width: 80%;
+        background-color: #ff0000;
+      }
+
+      .date {
+        align-items: flex-end;
+      }
+
+      .week {
+          margin-left: 10px;
+          margin-right: 20px;
+        }
+</style>
+
+<script>
+import fetch from '@system.fetch' 
+import router from '@system.router' 
+export default {
+    data() {
+        return {
+            park_lot_id:'',
+            petname: '',
+            phnum: '',
+            rentername:'',
+            renterphnum:'',
+            price: 0.00,
+            img:'',
+            address:'',
+            currentPage: 0,
+            singleTrip: {},
+            open: false,
+            tripType: '',
+            pickerVisible1: false,
+            pickerVisible2: false,
+            starttime: '',
+            endtime:'',
+            list2: [
+                ['00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23'],
+                ['00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '34', '35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46', '47', '48', '49', '50', '51', '52', '53', '54', '55', '56', '57', '58', '59']
+            ],
+        }
+    },
+    getSchedule(e){
+        console.log(JSON.parse(e.detail.data))
+        if (this.tripType === 'single') {
+            this.singleTrip = JSON.parse(e.detail.data)
+        }
+    },
+    onInit() {
+        let that = this
+        that.petname = that.$app.$def.data.username
+        that.phnum = that.$app.$def.data.userid
+
+        this.sendToComponent()
+    },
+    getDateObj() {
+        const date = new Date()
+        let year = date.getFullYear()
+        let month = date.getMonth() + 1
+        let day = date.getDate()
+        let week = date.getDay()
+        const lastDay = new Date(`${year}`, `${month}`, 0).getDate()
+        let obj = {
+            year,
+            month,
+            day,
+            week: this.getWeek(week)
+    }
+        return { obj, lastDay, week }
+    },
+    sendToComponent() {
+        let obj = this.getDateObj().obj
+        let lastDay = this.getDateObj().lastDay
+        let week = this.getDateObj().week
+        this.singleTrip = obj
+        let defalutObj = {}
+        if (obj.day + 1 > lastDay) {
+            if (obj.month < 12) {
+                defalutObj.month = obj.month + 1
+            } else {
+                defalutObj.year = obj.year + 1
+                defalutObj.month = 1
+            }
+            defalutObj.day = 1
+            } else {
+                defalutObj = {
+                year: obj.year,
+                month: obj.month,
+                day: obj.day + 1
+            }
+        }
+        week + 1 > 6 ? defalutObj.week = this.getWeek(0) : defalutObj.week = this.getWeek(week + 1)
+        this.roundTrip = {
+            start: obj,
+            end: defalutObj
+        }
+    },
+    openCalendar(type) {
+        this.tripType = type
+        this.open = !this.open
+    },
+    getWeek(date) {
+        const weekArr = ['日', '一', '二', '三', '四', '五', '六']
+        return weekArr[date]
+    },
+
+    showpicker(i) {
+      this[`pickerVisible${i}`] = true
+    },
+    close(i) {
+      this[`pickerVisible${i}`] = false
+    },
+    select1(e) {
+      console.log('两列所选的值：', e.detail[0], e.detail[1])
+      if(e.detail[0].content==null || e.detail[1].content==null)
+        this.starttime=''
+      else
+        this.starttime = e.detail[0].content + ':' + e.detail[1].content
+    },
+    select2(e) {
+      console.log('两列所选的值：', e.detail[0], e.detail[1])
+      if(e.detail[0].content==null || e.detail[1].content==null)
+        this.endtime=''
+      else
+        this.endtime = e.detail[0].content + ':' + e.detail[1].content
+    },
+
+    result(){
+        if(this.singleTrip.year && this.singleTrip.month && this.singleTrip.day && this.starttime && this.endtime && (this.starttime < this.endtime)){
+            let that = this
+            fetch.fetch({
+                url: that.$app.$def.data.public_http + '/order/new',
+                method:'POST',
+                data:{
+                    time_start:that.singleTrip.year + '-' + that.singleTrip.month + '-' + that.singleTrip.day + ' ' + this.starttime,
+                    time_end:that.singleTrip.year + '-' + that.singleTrip.month + '-' + that.singleTrip.day + ' ' + this.endtime,
+                    park_lot:that.park_lot_id,
+                    phone_number:that.$app.$def.data.userid
+                },
+                responseType: 'json',
+                success: function(response) {
+                    console.log("成功")
+                    console.log(response.data)
+                    if(response.data.code==0){
+                        console.log("code=0")
+                        console.log(response.data)
+                        that.$child('toast').showToast({
+                            content: '预约成功！',
+                            type: 'success'
+                        })
+                        setTimeout(() => {
+                            that.$child('toast').hideToast()
+                        }, 2000)
+                        router.back({
+                        })
+                    }
+                    else if(response.data.code==401){
+                        console.log("code=401")
+                        console.log(response.data)
+                        that.$child('message').showMessage({
+                            content: '时间未在开放时间段内！请重新选择',
+                            type: 'warning'
+                        })
+                    }
+                    else if(response.data.code==402){
+                        that.$child('toast').showToast({
+                            content: '车位已占用！预约失败！',
+                            type: 'error'
+                        })
+                        setTimeout(() => {
+                            that.$child('toast').hideToast()
+                        }, 2000)
+                        router.back({
+                        })
+                    }
+                    else if(response.data.code==403){
+                        that.$child('toast').showToast({
+                            content: '尚有订单未完成！正在前往。。。',
+                            type: 'warning'
+                        })
+                        setTimeout(() => {
+                            that.$child('toast').hideToast()
+                        }, 2000)
+                        router.push({
+                            uri: '/pages/orderdetail',
+                            params:{
+                                orderid:response.data.data.order_id
+                            }
+                        })
+                    }
+                },
+                fail: function(data, code) {
+                    console.log("fail")
+                    console.log(data)
+                }
+            })
+        }
+        else if(!this.singleTrip.year){
+            this.$child('message').showMessage({
+                content: '请选择预约日期！',
+                type: 'warning'
+            })
+        }
+        else if(this.starttime >= this.endtime){
+            this.$child('message').showMessage({
+                content: '预约时间选择错误！',
+                type: 'warning'
+            })
+        }
+        else {
+            this.$child('message').showMessage({
+                content: '请选择预约时间！',
+                type: 'warning'
+            })
+        }
+    }
+}
+</script>

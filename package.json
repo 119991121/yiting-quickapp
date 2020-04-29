@@ -1,0 +1,26 @@
+{
+  "name": "easyparking",
+  "version": "1.0.0",
+  "subversion": {
+    "toolkit": "0.6.10"
+  },
+  "description": "",
+  "scripts": {
+    "build": "hap build",
+    "release": "hap release",
+    "server": "hap server",
+    "watch": "hap watch"
+  },
+  "devDependencies": {
+    "babel-eslint": "^10.0.3",
+    "eslint": "^5.16.0",
+    "eslint-plugin-hybrid": "0.0.5",
+    "hap-toolkit": "^0.6.10",
+    "less": "^3.10.3",
+    "less-loader": "^5.0.0",
+    "quist-ui": "^1.1.2"
+  },
+  "dependencies": {
+    "@showings_quix/quix_ui": "^1.0.14"
+  }
+}

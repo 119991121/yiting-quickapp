@@ -1,0 +1,279 @@
+<import name="my-avatar" src="../../components/avatar"></import>
+<import name="white-space" src="../../../node_modules/@showings_quix/quix_ui/WhiteSpace"></import>
+<import name="radio-field" src="../../../node_modules/@showings_quix/quix_ui/RadioField"></import>
+<import name="cell-box" src="../../../node_modules/@showings_quix/quix_ui/CellBox"></import>
+<import name="input-field" src="../../../node_modules/@showings_quix/quix_ui/InputField"></import>
+<import name="my-button" src="../../components/button"></import>
+<import name="my-radio" src="../../components/radio"></import>
+<import name="my-radio-group" src="../../components/radio-group"></import>
+<import name="my-toast" src="../../components/toast"></import>
+
+<template>
+    <div class="page">
+        <div class="avatar" onclick="avatar">
+            <white-space size = 'md'></white-space>
+            <my-avatar src="{{icon}}" size="large"></my-avatar>
+            <white-space size = 'ssm'></white-space>
+            <text style="font-size:40px;font-weight:300; color: #2a2827;">点击更改头像</text>
+        </div>
+
+        <white-space size = 'md'></white-space>
+
+        <div class="input">
+            <text class="item-txt">昵称</text>
+            <input-field placeholder='{{petname}}' maxlength="6" value="{{newpetname}}" oninput="onInput1" clearable="true"></input-field>
+            <white-space size = 'sm'></white-space>
+            <text class="item-txt">密码</text>
+            <input-field type="password" placeholder='{{password}}' value="{{newpassword}}" oninput="onInput3" clearable="true"></input-field>
+            <white-space size = 'sm'></white-space>
+            <text class="item-txt">性别</text>
+                <my-radio-group id="myGroup" current="{{choice}}" onchange="handleRadio">
+                    <my-radio group="myGroup" for="{{sex}}" position="left" value="{{$item.name}}"></my-radio>
+                </my-radio-group>
+        </div>
+
+        <white-space size = 'md'></white-space>
+
+        <div style="display: flex;flex-direction: row;justify-content:flex-end;">
+            <my-button type="login" inline="true" onclick="result">确认修改</my-button>
+            <white-space size = 'md'></white-space>
+            <white-space size = 'md'></white-space>
+            <my-toast id="toast"></my-toast>
+        </div>
+    
+    </div>
+</template>
+
+<style lang="less">
+    .page{
+        display: flex;
+        flex-direction: column;
+        justify-content:flex-start; 
+        background-color: #f5f5f5;
+    }
+    
+    .avatar{
+        align-items:center;
+        flex-direction:column;
+    }
+
+    .input{
+        align-items:flex-start;
+        flex-direction:column;
+        width: 100%;
+        border-bottom-width: 1px;
+        border-style: solid;
+        border-color: #dddddd;
+        padding-bottom: 10px;
+        padding-top: 10px;
+    }
+
+    .item-txt {
+        width: 180px;
+        color: #666666;
+        font-size: 32px;
+    }
+
+    .item-box {
+        margin: 20px;
+        flex-direction: row;
+    }
+</style>
+
+<script>
+import request from '@system.request' 
+import media from '@system.media' 
+import fetch from '@system.fetch' 
+import router from '@system.router' 
+export default {
+    data(){
+        return{
+            icon:'',
+            petname:'',
+            phonenum:'',
+            password:'',
+            newavater:'',
+            newpetname:'',
+            newphonenum:'',
+            newpassword:'',
+            sex: [{
+                    id: 1,
+                    name: '男',
+                    checked: true
+                }, {
+                    id: 2,
+                    name: '女',
+                    checked: false
+                }],
+            choice:'',
+            editstate:false
+        }
+    },
+
+    onInit() {
+        this.newphonenum = this.phonenum
+        this.newpassword = this.password
+        this.newpetname = this.petname
+        this.newavater = this.icon
+        if(this.choice=='女'){
+            this.sex[0].checked=false
+            this.sex[1].checked=true
+        }
+    },
+
+    avatar(){
+        let that = this
+        media.pickImage({
+            success: function(data) {
+                that.newavatar = data.uri
+                console.log(`handling success: ${data.uri}`)
+                that.editstate = true
+                router.replace({
+                    uri:'/pages/edituser',
+                    params:{
+                        icon:that.newavatar,
+                        petname:that.newpetname,
+                        phonenum:that.newphonenum,
+                        password:that.newpassword,
+                        editstate:that.editstate                   
+                    }
+                })
+            },
+            fail: function(data, code) {
+                console.log(`handling fail, code = ${code}`)
+            }
+        })
+    },
+
+    onInput1 ({ detail: { value } }) {
+        console.log(value)
+        this.newpetname = value
+    },
+
+    onInput2 ({ detail: { value } }) {
+        console.log(value)
+        this.newphonenum = value
+    },
+
+    onInput3 ({ detail: { value } }) {
+        console.log(value)
+        this.newpassword = value
+    },
+
+    onChange({ detail: { value } }) {
+        console.log(value)
+        this.sex = value
+    },
+
+    handleRadio({detail}) {
+        this.choice = detail.value
+        console.log(this.choice)
+    },
+
+    result(){
+        let that = this
+        if(this.editstate){
+        request.upload({
+            url: that.$app.$def.data.public_http + '/auth/usermanagement',
+            files: [{
+                uri: that.icon,
+                name: 'icon',
+                filename: that.phone + '.png'
+            }],
+            data: {
+                phone_number:that.newphonenum,
+                petname:that.newpetname,
+                sex:that.choice,
+                password:that.newpassword
+            },
+            success: function(res) {
+                let response = JSON.parse(res.data)
+                if(response.code==0){
+                    console.log("修改成功")
+                    console.log(that.$app.$def.data.userid)
+                    that.$app.$def.data.userid = that.newphonenum,
+                    that.$app.$def.data.username = that.newpetname,
+                    that.$app.$def.data.usersex = that.choice,
+                    that.$app.$def.data.userpassword = that.newpassword
+                    that.$app.$def.data.useravatar = response.data.image_url
+                    console.log(that.$app.$def.data.userid)
+                    that.$child('toast').showToast({
+                        content: '修改成功！',
+                        type: 'success'
+                    })
+                    setTimeout(() => {
+                        that.$child('toast').hideToast()
+                    }, 2000)
+                    router.replace({
+                        uri: '/pages/user',
+                        params:{
+                            avatar:response.data.image_url,
+                            name:that.newpetname,
+                            id:that.newphonenum,
+                            password:that.newpassword
+                        }
+                    })
+                }
+            },
+            fail: function(data, code) {
+                that.$child('toast').showToast({
+                content: '修改失败！',
+                type: 'success'
+            })
+            setTimeout(() => {
+                that.$child('toast').hideToast()
+            }, 2000)
+            }
+        })
+        }else{
+        fetch.fetch({
+            url: that.$app.$def.data.public_http + '/auth/usermanagement',
+            method:'POST',
+            data: {
+                phone_number:that.newphonenum,
+                petname:that.newpetname,
+                sex:that.choice,
+                password:that.newpassword
+            },
+            responseType: 'json',
+            success: function(res) {
+                let response = res.data
+                if(response.code==0){
+                    that.$child('toast').showToast({
+                        content: '修改成功！',
+                        type: 'success'
+                    })
+                    setTimeout(() => {
+                        that.$child('toast').hideToast()
+                    }, 2000)
+                    that.$app.$def.data.userid = that.newphonenum,
+                    that.$app.$def.data.username = that.newpetname,
+                    that.$app.$def.data.usersex = that.choice,
+                    that.$app.$def.data.userpassword = that.newpassword
+                    that.$app.$def.data.useravatar = response.data.image_url
+                    console.log(that.$app.$def.data.useravatar)
+                    router.replace({
+                        uri: '/pages/user',
+                        params:{
+                            avatar:response.data.image_url,
+                            name:that.newpetname,
+                            id:that.newphonenum,
+                            password:that.newpassword
+                        }
+                    })
+                }
+            },
+            fail: function(data, code) {
+                that.$child('toast').showToast({
+                content: '修改失败！',
+                type: 'success'
+            })
+            setTimeout(() => {
+                that.$child('toast').hideToast()
+            }, 2000)
+            }
+        })
+        }
+    }
+}
+</script>

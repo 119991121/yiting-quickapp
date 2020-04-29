@@ -1,0 +1,148 @@
+<import name="my-segmented-control" src="../../components/segmented-control"></import>
+<import name="my-card" src="../../components/card"></import>
+<import name="my-flex" src="../../../node_modules/@showings_quix/quix_ui/Flex"></import>
+<import name="my-icon" src="../../components/icon"></import>
+
+<template>
+    <div class="wrap">
+
+      <my-segmented-control theme="positive" current="{{currentPage}}" values="{{ segments }}" onchange="changePage"></my-segmented-control>
+      
+        <div>
+        <list class="tutorial-page">
+            <!-- 商品列表 -->
+                <block for="list">
+                <list-item type="product">
+                <my-flex align="center" direction="column"  onclick="detail">
+                    <my-card title1="单价:" title2="￥{{$item.price}}/h" thumb="{{$item.photo_urls[0]}}" extra="查看详情" footer="订单编号:{{$item.order_id}}">
+                        <text>车位地址：{{$item.detail_address}}</text>
+                    </my-card>
+                </my-flex>
+                </list-item>
+                </block>
+        </list>
+        </div>
+
+    </div>
+</template>
+<style lang="less">
+.wrap {
+  flex-direction: column;
+  padding: 10px;
+  .sub-title {
+    margin: 20px 0;
+  }
+
+.load-more{
+    display: flex;
+    flex-direction:column;
+    justify-content:flex-start;
+    align-items: flex-start;
+  }
+
+.tip{
+    display: flex;
+    align-items:center;
+    flex-direction: row;
+    justify-content:center;
+    background-color:#bcb12e;
+    width:100%;
+    height:150px;
+    border-bottom-left-radius:25px;
+    border-bottom-right-radius:25px;
+    border-bottom-width:10px;
+    border-bottom-color:#bcb12e
+  }
+}
+</style>
+<script>
+
+import fetch from '@system.fetch' 
+import router from '@system.router' 
+
+export default {
+    data() {
+        return {
+            userid:'',
+            currentPage: 0,
+            mode: 4,
+            segments: [
+              '全部订单', '已完成', '已取消', '预约中', '使用中', '待支付'
+            ],
+            list:[],
+        }
+    },
+    changePage(e) {
+        switch(e.detail.index){
+            case 0:
+                this.mode=4
+                break 
+            case 1:
+                this.mode=3
+                break
+            case 2:
+                this.mode=-1
+                break
+            case 3:
+                this.mode=0
+                break
+            case 4:
+                this.mode=1
+                break
+            case 5:
+                this.mode=2
+                break       
+        }
+        console.log(this.mode)
+        let that = this
+        fetch.fetch({
+          url: that.$app.$def.data.public_http + '/order/lessor',
+          method:'GET',
+          data:{
+            phone_number:that.$app.$def.data.userid,
+            mode:this.mode
+          },
+          responseType: 'json',
+          success: function(response) {
+              console.log(response.data)
+            if(response.data.code==0){
+            console.log(response.data.data)
+              that.list = response.data.data
+            }
+          },
+        })
+        this.currentPage = e.detail.index
+    },
+
+    onInit () {
+      let that = this
+        fetch.fetch({
+          url: that.$app.$def.data.public_http + '/order/lessor',
+          method:'GET',
+          data:{
+            phone_number:that.$app.$def.data.userid,
+            mode:that.mode
+          },
+          responseType: 'json',
+          success: function(response) {
+              console.log(response.data)
+            if(response.data.code==0){
+            console.log(response.data.data)
+              that.list = response.data.data
+            }
+          },
+        })
+    },
+
+    detail(){
+        router.push({
+            uri: '/pages/orderdetail',
+            params:{
+              orderid:this.$item.order_id,
+              img:this.$item.photo_urls[0],
+              statecode:this.$item.state
+            }
+      })
+    }
+}
+</script>

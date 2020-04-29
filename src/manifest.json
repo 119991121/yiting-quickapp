@@ -1,0 +1,151 @@
+{
+  "package": "com.easyparking.demo",
+  "name": "易停",
+  "versionName": "1.1.0",
+  "versionCode": "1",
+  "minPlatformVersion": "1020",
+  "icon": "/Common/EPlogo.png",
+  "features": [
+    { "name": "system.prompt" },
+    { "name": "system.router" },
+    { "name": "system.shortcut" },
+    {"name":"system.media"},
+    {"name":"system.request"},
+    {"name": "system.fetch" },
+    {"name": "system.geolocation" },
+    { "name": "system.clipboard" }
+  ],
+  "permissions": [
+    { "origin": "*" }
+  ],
+  "config": {
+    "logLevel": "debug"
+  },
+  "router": {
+    "entry": "pages/findpark",
+    "pages": {
+      "pages/findpark": {
+        "component": "findpark"
+      },
+      "pages/finddetail": {
+        "component": "finddetail"
+      },
+      "pages/book": {
+        "component": "book"
+      },
+      "pages/mypark": {
+        "component": "mypark"
+      },
+      "pages/myparkdetail": {
+        "component": "myparkdetail"
+      },
+      "pages/parkorder": {
+        "component": "parkorder"
+      },
+      "pages/newmypark": {
+        "component": "newmypark"
+      },
+      "pages/editmypark": {
+        "component": "editmypark"
+      },
+      "pages/user": {
+        "component": "user"
+      },
+      "pages/edituser": {
+        "component": "edituser"
+      },
+      "pages/login": {
+        "component": "login"
+      },
+      "pages/register1": {
+        "component": "register1"
+      },
+      "pages/register2": {
+        "component": "register2"
+      },
+      "pages/alllist": {
+        "component": "allist"
+      },
+      "pages/orderdetail": {
+        "component": "orderdetail"
+      },
+      "About": {
+        "component": "index"
+      }
+  },
+    "widgets": {
+      "CardDemo": {
+        "name": "CardDemo",
+        "description": "快应用卡片展示",
+        "component": "index",
+        "path": "/CardDemo",
+        "features": []
+      }
+    }
+  },
+  "display": {
+    "titleBarBackgroundColor": "#e6d933",
+    "titleBarTextColor": "#000000",
+    "titleBarText": "易停",
+    "pages": {
+      "pages/findpark": {
+        "titleBar":false,
+        "menu":true
+      },
+      "pages/finddetail": {
+        "titleBarText": "车位详情",
+        "titleBarBackgroundColor": "#bcb12e"
+      },
+      "pages/book": {
+        "titleBarText": "预约",
+        "titleBarBackgroundColor": "#bcb12e"
+      },
+      "pages/mypark": {
+        "titleBar":false
+      },
+      "pages/myparkdetail": {
+        "titleBarText": "我的车位",
+        "titleBarBackgroundColor": "#bcb12e"
+      },
+      "pages/parkorder": {
+        "titleBarText": "车位订单列表",
+        "titleBarBackgroundColor": "#bcb12e"
+      },
+      "pages/newmypark": {
+        "titleBarText": "新建车位",
+        "titleBarBackgroundColor": "#bcb12e"
+      },
+      "pages/editmypark": {
+        "titleBarText": "编辑车位",
+        "titleBarBackgroundColor": "#bcb12e"
+      },
+      "pages/user": {
+        "titleBar":false
+      },
+      "pages/edituser": {
+        "titleBarText": "修改个人信息",
+        "titleBarBackgroundColor": "#bcb12e"
+      },
+      "pages/login": {
+        "titleBar":false
+      },
+      "pages/register1": {
+        "titleBar":false
+      },
+      "pages/register2": {
+        "titleBar":false
+      },
+      "pages/alllist": {
+        "titleBarText": "我的订单",
+        "titleBarBackgroundColor": "#bcb12e"
+      },
+      "pages/orderdetail": {
+        "titleBarText": "订单详情",
+        "titleBarBackgroundColor": "#bcb12e"
+      },
+      "About": {
+        "menu": false
+      }
+    }
+  }
+}

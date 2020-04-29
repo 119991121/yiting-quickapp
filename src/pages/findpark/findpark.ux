@@ -1,0 +1,300 @@
+<import name="my-tabbar" src="../../components/tabbar"></import>
+<import name="container" src="../../../node_modules/@showings_quix/quix_ui/Container"></import>
+<import name="white-space" src="../../../node_modules/@showings_quix/quix_ui/WhiteSpace"></import>
+<import name="flex" src="../../../node_modules/@showings_quix/quix_ui/Flex"></import>
+<import name="my-media" src="../../components/media"></import>
+<import name="my-flex" src="../../../node_modules/@showings_quix/quix_ui/Flex"></import>
+<import name="my-icon" src="../../components/icon"></import>
+<import name="my-action-sheet" src="../../components/action-sheet"></import>
+<import name="my-button" src="../../components/button"></import>
+<import name="my-card" src="../../components/card"></import>
+<import name="my-avatar" src="../../components/avatar"></import>
+<import name="my-toast" src="../../components/toast"></import>
+
+<template>
+    <div>
+        <div class="tutorial-page">
+
+          <div class="logo">
+            <white-space></white-space>
+            <my-avatar src="../../Common/logo.png" size="large"></my-avatar>
+            <white-space></white-space>
+            <text style="font-size:50px;font-weight: 600">易停</text>
+          </div>
+
+            <white-space size='sm'></white-space>
+
+            <div onclick="actionSheet('default')">
+              <div class="choose">
+                <my-icon type='list' size='50'></my-icon>
+                <white-space></white-space>
+                <text style="font-size: 40px">{{selectinfo}}</text>
+              </div>
+            </div>
+
+            <list class="tutorial-page" onscrollbottom="renderMoreListItem">
+            <!-- 商品列表 -->
+                <block for="productList">
+                <list-item type="product">
+                <my-flex align="center" direction="column"  onclick="detail">
+                    <my-card title1="车主昵称： " title2="{{$item.renter_nickname}}" thumb="{{$item.photo_url[0]}}" extra="查看详情" footer="单价：￥{{$item.price}}/h">
+                      <text >车位地址：{{$item.detail_address}}</text>
+                    </my-card>
+                </my-flex>
+                </list-item>
+                </block>
+
+                <list-item type="loadStatus" class="load-more">
+                    <progress type="circular" show="{{isLoadingData}}"></progress>
+                    <white-space size='md' show="{{!hasMoreData}}" ></white-space>
+                    <text show="{{isLoadingData}}" style="font-size:40px;">正在加载</text>
+                    <text show="{{!hasMoreData}}" style="font-size:40px;">没有更多了~</text>
+                </list-item>
+            </list>
+
+            <my-tabbar tabbar="{{tabbarData}}"></my-tabbar>
+
+            <my-action-sheet id="actionSheet"></my-action-sheet>
+        </div>
+        
+        <my-toast id="toast"></my-toast>
+    </div>
+</template>
+
+<style>
+    .tutorial-page {
+    display: flex;
+    flex-direction: column;
+    justify-content:flex-start;
+    align-items: flex-start;
+  }
+
+  .logo{
+    display: flex;
+    flex-direction: row;
+    justify-content:flex-start;
+    align-items: center;
+    background-color: #e6d933;
+    height: 150px;
+    width: 100%;
+    border-bottom-left-radius:25px;
+    border-bottom-right-radius:25px;
+    border-bottom-width:10px;
+    border-bottom-color:#e6d933
+  }
+
+  .choose{
+    display: flex;
+    flex-direction: row;
+    justify-content:flex-start;
+    align-items: flex-start;
+    border-radius:20px;
+    border-width: 20px;
+    border-color:#e6d933;
+    background-color:#e6d933;
+    width:100%;
+  }
+
+  .load-more{
+    display: flex;
+    flex-direction:column;
+    justify-content:flex-start;
+    align-items: flex-start;
+  }
+</style>
+
+<script>
+import geolocation from '@system.geolocation' 
+import fetch from '@system.fetch' 
+import router from '@system.router'
+
+  export default {
+    data() {
+        return {
+      selectinfo:'距离优先（升序）',
+      mode:0,
+      order_mode:2,
+      latitude:0,
+      longitude:0,
+      locationstate:false,
+      timerActionSheet: null,
+      list:[],
+      productList: [],
+      hasMoreData: true,
+      bindex:0,
+      eindex:2,
+      isLoadingData: false,
+            tabbarData: [
+                {
+                    iconPath: '../../Common/1.png',
+                    selectedIconPath: '../../Common/4.png',
+                    pagePath: '/pages/findpark',
+                    text: '找车位',
+                    active: true
+                },
+                {
+                    iconPath: '../../Common/2.png',
+                    selectedIconPath: '../../Common/5.png',
+                    pagePath: '/pages/mypark',
+                    text: '我的车位',
+                    active: false
+                },
+                {
+                    iconPath: '../../Common/3.png',
+                    selectedIconPath: '../../Common/6.png',
+                    pagePath: '/pages/user',
+                    text: '我的',
+                    active: false
+                }
+            ]
+        }
+    },
+
+    onInit () {
+      router.clear()
+
+      let that = this
+
+      fetch.fetch({
+          url: that.$app.$def.data.public_http + '/park-lot/list',
+          method:'GET',
+          data:{
+            latitude:that.latitude,
+            longitude:that.longitude,
+            bindex:that.bindex,
+            eindex:that.eindex,
+            mode:that.mode,
+            order_mode:that.order_mode
+          },
+          responseType: 'json',
+          success: function(response) {
+            console.log(response.data)
+            if(response.data.code==0){
+              that.productList = response.data.data
+              console.log(that.productList)
+            }else if(response.data.code==301){
+              that.hasMoreData = false
+            }
+          },
+          fail:function(data,code){
+            console.log(data)
+          }
+      })
+    },
+    /**
+     * 请求并渲染
+    */
+    _renderList () {
+      // 重新请求数据并根据模式判断是否需要渲染列表
+      let that = this
+      this.isLoadingData = true
+      console.log("bindex:" + that.bindex)
+      console.log("eindex:" + that.eindex)
+      fetch.fetch({
+        url: that.$app.$def.data.public_http + '/park-lot/list',
+        method:'GET',
+        data:{
+          latitude:that.latitude,
+          longitude:that.longitude,
+          bindex:that.bindex,
+          eindex:that.eindex,
+          mode:that.mode,
+          order_mode:that.order_mode
+        },
+        responseType: 'json',
+        success: function(response){
+        console.log(response.data)
+        if(response.data.code==0){
+          that.list = response.data.data
+          console.log(that.list)
+          if (that.list.length != 0) {
+            that.productList = that.productList.concat(that.list)  
+            console.log("pro:"+that.productList.length)
+            console.log("list:"+that.list.length)
+          }else{
+            that.hasMoreData=false
+          }
+          that.isLoadingData = false
+        }else if(response.data.code==301){
+              that.hasMoreData = false
+            }
+      },
+      fail: function(data, code){
+          console.log(data)
+      }
+      })
+    },
+    /**
+     * 滑动到底部时加载更多
+     */
+    renderMoreListItem () {
+      if (!this.isLoadingData) {
+        this.bindex = this.eindex+1
+        this.eindex = this.eindex + 3
+        this._renderList()
+      }
+    },
+
+    detail(){
+        router.push({
+            uri: '/pages/finddetail',
+            params:{
+              park_lot_id:this.$item.park_lot_id,
+              imageList:this.$item.photo_url
+            }
+      })
+    },
+
+    actionSheet(theme){
+      if(this.timerActionSheet) clearTimeout(this.timerActionSheet)
+
+      this.$child('actionSheet').showSheet({
+        theme,
+        titleText: '三秒后自动关闭',
+        buttons: [{
+          text: '距离优先（降序）',
+        },{
+          text: '距离优先（升序）',
+        },{
+          text: '价格优先（五公里内降序）',
+        },{
+          text:'价格优先（五公里内升序）',
+        }],
+        buttonClicked: (index,item)=>{
+          if(index==0){
+            console.log('hhhhhh')
+            this.selectinfo='距离优先'
+            this.mode = 0
+            this.order_mode = 2
+          }else if(index==1){
+            console.log('aaaaaa')
+            this.selectinfo='价格降序（五公里内）'
+            this.mode = 1
+            this.order_mode = 2
+          }else if(index==2){
+            console.log('aaaaaa')
+            this.selectinfo='价格升序（五公里内）'
+            this.mode = 1
+            this.order_mode = 2
+          }
+          router.replace({
+            uri:'/pages/findpark',
+            params:{
+              selectinfo:this.selectinfo,
+              mode:this.mode,
+              order_mode:this.order_mode
+            }
+          })
+        },
+        cancelText: '取消',
+        cancel: ()=>{
+          console.log('取消按钮或蒙层点击事件')
+        },
+      })
+
+      this.timerActionSheet = setTimeout(()=>{
+        this.$child('actionSheet').hideSheet()
+      }, 3000)
+    }
+}
+</script>

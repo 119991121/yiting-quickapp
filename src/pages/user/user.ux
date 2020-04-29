@@ -1,0 +1,219 @@
+<import name="my-tabbar" src="../../components/tabbar"></import>
+<import name="white-space" src="../../../node_modules/@showings_quix/quix_ui/WhiteSpace"></import>
+<import name="wind-blank" src="../../../node_modules/@showings_quix/quix_ui/WindBlank"></import>
+<import name="cell-box" src="../../../node_modules/@showings_quix/quix_ui/CellBox"></import>
+<import name="my-cell" src="../../../node_modules/@showings_quix/quix_ui/Cell"></import>
+<import name="my-modal" src="../../../node_modules/@showings_quix/quix_ui/Modal"></import>
+<import name="switch-field" src="../../../node_modules/@showings_quix/quix_ui/SwitchField"></import>
+<import name="my-avatar" src="../../components/avatar"></import>
+ 
+<template>
+<div>
+    <div>
+    <div class="page-container">
+        <div class="tip" if ="{{x}}">
+            <white-space size = 'ssm'></white-space>
+
+            <div class="row-container">
+                <white-space></white-space>
+        
+                <my-avatar src="{{avatar}}" size="medium"></my-avatar>
+
+                <white-space></white-space>
+
+                <text style="font-size: 40px;font-weight: 300;color:#000000">昵称:  {{name}}</text>
+
+                <white-space></white-space>                
+            </div>
+        </div>
+
+        <div class = "tip1" if="{{!x}}">
+            <text style="font-size:40px;font-weight: 600;color:#000000">我的</text>
+        </div>
+
+        <white-space size = 'md'></white-space>
+
+        <div if ="{{!x}}" onclick = "changepage" >
+            <text style="font-size:40px;font-weight: 600" if="{{!loginstate}}" onclick="login">点击立即登录</text>
+        </div>
+
+        <div style="display: flex;flex-direction: column;width:95%;" if ="{{x}}">
+            <white-space size = 'sm'></white-space>
+            <my-cell type="settings" label="修改个人信息" arrow="true" onclick="edit"></my-cell>
+            <white-space size = 'sm'></white-space>
+            <my-cell type="card" label="实名验证未完成" arrow="true" onclick="checktrue" if="{{!check}}"></my-cell>
+            <white-space size = 'sm' if="{{!check}}"></white-space>
+            <my-cell type="card" label="实名验证已完成" if="{{check}}"></my-cell>
+            <white-space size = 'sm' if="{{check}}"></white-space>
+            <my-cell type="cart" label="查看我的订单" arrow="true" onclick="look"></my-cell>
+            <white-space size = 'sm'></white-space>
+            <my-cell label="退出登录" onclick="onOpen"></my-cell>
+            <my-modal visible="{{visible}}" onclose="onClose" message="{{message}}" onclick="onClick" footer-list="{{footer}}"></my-modal>
+        </div>
+
+    </div>
+        <my-tabbar tabbar="{{tabbarData}}"></my-tabbar>
+    </div>
+  </div>
+</template>
+
+<style lang="less">
+.page-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    text {
+        font-size: 25px;
+      }
+  }
+
+  .tip{
+    display: flex;
+    flex-direction: column;
+    align-items:flex-start;
+    justify-content:flex-start;
+    background-color:#e6d933;
+    width:100%;
+    height:150px;
+    border-bottom-left-radius:25px;
+    border-bottom-right-radius:25px;
+    border-bottom-width:10px;
+    border-bottom-color:#e6d933
+  }
+
+  .tip1{
+    display: flex;
+    flex-direction: column;
+    align-items:center;
+    justify-content:center;
+    background-color:#e6d933;
+    width:100%;
+    height:150px;
+    border-bottom-left-radius:25px;
+    border-bottom-right-radius:25px;
+    border-bottom-width:10px;
+    border-bottom-color:#e6d933
+  }
+.row-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+
+    text {
+        font-size: 25px;
+      }
+  }
+</style>
+
+<script>
+import router from '@system.router' 
+  export default {
+    data() {
+        return {
+            x:false,
+            check:false,
+            id:'',
+            password:'',
+            name:'',
+            avatar:'',
+            sex:'',
+            visible: false,
+            message: '确认退出？',
+            footer: [
+                {
+                    label: '确定',
+                    color: '#c41d06'
+                }, 
+                {
+                    label: '取消'
+                }],
+            tabbarData: [
+                {
+                    iconPath: '../../Common/1.png',
+                    selectedIconPath: '../../Common/4.png',
+                    pagePath: '/pages/findpark',
+                    text: '找车位',
+                    active: false
+                },
+                {
+                    iconPath: '../../Common/2.png',
+                    selectedIconPath: '../../Common/5.png',
+                    pagePath: '/pages/mypark',
+                    text: '我的车位',
+                    active: false
+                },
+                {
+                    iconPath: '../../Common/3.png',
+                    selectedIconPath: '../../Common/6.png',
+                    pagePath: '/pages/user',
+                    text: '我的',
+                    active: true
+                }
+            ]
+        }
+    },
+    onInit() {
+        console.log("初始化")
+        console.log(this.$app.$def.data.loginstate)
+        router.clear()
+        this.check = this.$app.$def.data.truestate
+        this.x = this.$app.$def.data.loginstate
+        this.id = this.$app.$def.data.userid
+        this.name = this.$app.$def.data.username
+        this.password = this.$app.$def.data.userpassword
+        this.avatar = this.$app.$def.data.useravatar
+        this.sex = this.$app.$def.data.usersex
+
+        console.log(this.$app.$def.data.truestate)
+    },
+    onOpen () {
+        this.visible = true
+    },
+    onClose () {
+        this.visible = false
+    },
+    onClick ({ detail: { idx } }) {
+        if(idx==0){
+            this.$app.$def.data.loginstate = false
+            this.x = false
+        }
+        console.log(idx)
+    },
+    changepage(){
+        router.push({
+            uri: '/pages/login'
+      })
+    },
+    edit(){
+        router.push({
+            uri: '/pages/edituser',
+            params:{
+                icon:this.avatar,
+                petname:this.name,
+                phonenum:this.id,
+                password:this.password,
+                choice:this.sex
+            }
+        })
+    },
+    look(){
+        router.push({
+            uri: '/pages/alllist',
+            params:{
+                userid:this.id,
+            }
+        })
+    },
+    checktrue(){
+        router.push({
+            uri: '/pages/register2',
+            params:{
+                phone:this.id,
+            }
+        })        
+    }
+}
+</script>
